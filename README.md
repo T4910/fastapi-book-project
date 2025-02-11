@@ -114,6 +114,91 @@ Available genres:
 - Romance
 - Thriller
 
+## Deployment
+
+### Prerequisites
+
+- A server with Ubuntu/Debian
+- Nginx installed
+- Python 3.9 or higher
+- Domain name (optional but recommended)
+
+### Server Setup
+
+1. Install required packages:
+```bash
+sudo apt update
+sudo apt install python3-pip python3-venv nginx
+```
+
+2. Clone the repository and set up the environment:
+```bash
+git clone <your-repo-url>
+cd fastapi-book-project
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+3. Configure Nginx:
+- Copy the nginx.conf file to `/etc/nginx/sites-available/fastapi-book`
+- Create a symbolic link:
+```bash
+sudo ln -s /etc/nginx/sites-available/fastapi-book /etc/nginx/sites-enabled/
+```
+- Test and restart Nginx:
+```bash
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+4. Set up systemd service:
+```bash
+sudo nano /etc/systemd/system/fastapi-book.service
+```
+Add the following content:
+```ini
+[Unit]
+Description=FastAPI Book Application
+After=network.target
+
+[Service]
+User=<your-user>
+Group=<your-group>
+WorkingDirectory=/path/to/fastapi-book-project
+Environment="PATH=/path/to/fastapi-book-project/venv/bin"
+ExecStart=/path/to/fastapi-book-project/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+
+[Install]
+WantedBy=multi-user.target
+```
+
+5. Start the service:
+```bash
+sudo systemctl start fastapi-book
+sudo systemctl enable fastapi-book
+```
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for CI/CD:
+
+1. **CI Pipeline** (Pull Requests):
+   - Runs on pull requests to main branch
+   - Executes all tests using pytest
+   - Fails if any tests fail
+
+2. **CD Pipeline** (Merge to Main):
+   - Triggers on merge to main branch
+   - Automatically deploys to production server
+   - Updates the application with latest changes
+
+### Setting up CI/CD
+
+1. Add your server's SSH key to GitHub Secrets as `DEPLOY_KEY`
+2. Ensure your server has the necessary permissions
+3. The pipelines are configured in `.github/workflows/ci_cd.yml`
+
 ## Running Tests
 
 ```bash
