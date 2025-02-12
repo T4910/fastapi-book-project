@@ -36,9 +36,22 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Deploy to server
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+    
+    - name: Add SSH known hosts
       run: |
-        echo "Deploying to production server..."
-        # Add your deployment commands here
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 20.77.8.205 >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no azureuser@20.77.8.205 << 'EOF'
+          cd /home/azureuser/fastapi-book-project
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          sudo systemctl restart fastapi-book
+        EOF
