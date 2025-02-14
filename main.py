@@ -22,6 +22,6 @@ async def health_check():
     """Checks if server is active."""
     return {"status": "active"}
 
-api_router.get("/stage2")
+@app.get("/stage2")
 async def stage2():
     return {"message": "welcome to stage 2"}
